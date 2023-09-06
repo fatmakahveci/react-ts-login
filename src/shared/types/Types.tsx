@@ -13,6 +13,20 @@ export type CardProps = {
     children: ReactNode;
 };
 
+export type EmailProps = {
+    type: {
+        value: string;
+        isValid: boolean | null
+    };
+    action: {
+        type: 'USER_INPUT';
+        value: string;
+        } | {
+        type: 'INPUT_BLUR';
+        isValid: boolean | null;
+    };
+};
+
 export type HomeProps = {
     onLogout: any;
 };
@@ -29,4 +43,18 @@ export type MainHeaderProps = {
 export type NavigationProps = {
     isLoggedIn: boolean;
     onLogout: any;
+};
+
+export type PasswordProps = {
+    type: {
+        value: string;
+        isValid: boolean | null;
+    };
+    action: {
+        type: 'USER_INPUT';
+        value: string;
+        } | {
+        type: 'INPUT_BLUR';
+        isValid: boolean | null;
+    };
 };
