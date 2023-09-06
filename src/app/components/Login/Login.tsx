@@ -2,10 +2,10 @@
 
 import { FC, useEffect, useState } from 'react';
 
+import { LoginProps } from '@/shared/types/Types';
 import Button from '../UI/Button/Button';
 import Card from '../UI/Card/Card';
 import './Login.css';
-import { LoginProps } from '@/shared/types/Types';
 
 const Login: FC<LoginProps> = ({ onLogin }) => {
   const [enteredEmail, setEnteredEmail] = useState<string>('');

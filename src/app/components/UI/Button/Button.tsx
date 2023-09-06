@@ -1,7 +1,7 @@
 'use client';
 
 import { ButtonProps } from '@/shared/types/Types';
-import { FC } from 'react';
+import React, { FC } from 'react';
 import './Button.css';
 
 const Button: FC<ButtonProps> = ({ type, children, onClick, disabled }) => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { FC } from 'react';
+import React, { FC } from 'react';
 import { NavigationProps } from '@/shared/types/Types';
 import './Navigation.css';
 

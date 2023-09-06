@@ -1,6 +1,6 @@
 'use client';
 
-import { FC } from 'react';
+import React, { FC } from 'react';
 import { MainHeaderProps } from '@/shared/types/Types';
 import './MainHeader.css';
 import Navigation from './Navigation';

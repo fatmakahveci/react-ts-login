@@ -1,7 +1,7 @@
 'use client';
 
 import { HomeProps } from '@/shared/types/Types';
-import { FC } from 'react';
+import React, { FC } from 'react';
 import Card from '../UI/Card/Card';
 import './Home.css';
 
