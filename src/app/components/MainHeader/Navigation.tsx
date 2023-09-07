@@ -1,11 +1,11 @@
 'use client';
 
-import { NavigationProps } from '@/shared/types/Types';
+import { LogoutProps } from '@/shared/types/Types';
 import { FC, useContext } from 'react';
 import AuthContext, { AuthContextValue } from '../../store/auth-context';
 import './Navigation.css';
 
-const Navigation: FC<NavigationProps> = ({ onLogout }) => {
+const Navigation: FC<LogoutProps> = ({ onLogout }) => {
   const ctx = useContext<AuthContextValue>(AuthContext);
 
   return (
