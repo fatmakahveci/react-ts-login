@@ -36,12 +36,10 @@ export type LoginProps = {
 };
 
 export type MainHeaderProps = {
-    isAuthenticated: boolean;
     onLogout: any;
 };
 
 export type NavigationProps = {
-    isLoggedIn: boolean;
     onLogout: any;
 };
 

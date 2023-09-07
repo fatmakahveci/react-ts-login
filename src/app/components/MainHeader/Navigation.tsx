@@ -1,24 +1,27 @@
 'use client';
 
-import React, { FC } from 'react';
 import { NavigationProps } from '@/shared/types/Types';
+import { FC, useContext } from 'react';
+import AuthContext, { AuthContextValue } from '../../store/auth-context';
 import './Navigation.css';
 
-const Navigation: FC<NavigationProps> = ({ isLoggedIn, onLogout }) => {
+const Navigation: FC<NavigationProps> = ({ onLogout }) => {
+  const ctx = useContext<AuthContextValue>(AuthContext);
+
   return (
     <nav className="nav">
       <ul>
-        {isLoggedIn && (
+        {ctx.isLoggedIn && (
           <li>
             <a href="/">Users</a>
           </li>
         )}
-        {isLoggedIn && (
+        {ctx.isLoggedIn && (
           <li>
             <a href="/">Admin</a>
           </li>
         )}
-        {isLoggedIn && (
+        {ctx.isLoggedIn && (
           <li>
             <button onClick={onLogout}>Logout</button>
           </li>

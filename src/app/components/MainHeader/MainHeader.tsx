@@ -5,11 +5,11 @@ import { MainHeaderProps } from '@/shared/types/Types';
 import './MainHeader.css';
 import Navigation from './Navigation';
 
-const MainHeader: FC<MainHeaderProps> = ({ isAuthenticated, onLogout }) => {
+const MainHeader: FC<MainHeaderProps> = ({ onLogout }) => {
   return (
     <header className='main-header'>
       <h1>A Typical Page</h1>
-      <Navigation isLoggedIn={isAuthenticated} onLogout={onLogout} />
+      <Navigation onLogout={onLogout} />
     </header>
   );
 };
