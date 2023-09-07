@@ -27,20 +27,12 @@ export type EmailProps = {
     };
 };
 
-export type HomeProps = {
-    onLogout: any;
-};
-
 export type LoginProps = {
-    onLogin: any;
+    onLogin: (email: string, password: string) => void;
 };
 
-export type MainHeaderProps = {
-    onLogout: any;
-};
-
-export type NavigationProps = {
-    onLogout: any;
+export type LogoutProps = {
+    onLogout: () => void;
 };
 
 export type PasswordProps = {
