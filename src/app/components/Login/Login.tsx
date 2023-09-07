@@ -1,10 +1,11 @@
 'use client';
 
 import { EmailProps, LoginProps, PasswordProps } from '@/shared/types/Types';
-import { ChangeEvent, FC, FormEvent, useEffect, useReducer, useState } from 'react';
+import { ChangeEvent, FC, FormEvent, useContext, useEffect, useReducer, useState } from 'react';
 import Button from '../UI/Button/Button';
 import Card from '../UI/Card/Card';
 import './Login.css';
+import AuthContext from '@/app/store/auth-context';
 
 const emailReducer = (state: EmailProps["type"], action: EmailProps["action"]) => {
   if (action.type === 'USER_INPUT') {
@@ -26,11 +27,13 @@ const passwordReducer = (state: PasswordProps["type"], action: PasswordProps["ac
   return { value: '', isValid: false };
 };
 
-const Login: FC<LoginProps> = ({ onLogin }) => {
+const Login = (): JSX.Element => {
   const [formIsValid, setFormIsValid] = useState<boolean>(false);
 
   const [emailState, dispatchEmail] = useReducer(emailReducer, { value: '', isValid: false });
   const [passwordState, dispatchPassword] = useReducer(passwordReducer, { value: '', isValid: false });
+
+  const authCtx = useContext(AuthContext);
 
   const { isValid: emailIsValid } = emailState;
   const { isValid: passwordIsValid } = passwordState;
@@ -63,7 +66,7 @@ const Login: FC<LoginProps> = ({ onLogin }) => {
 
   const submitHandler = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
-    onLogin(emailState.value, passwordState.value);
+    authCtx.onLogin(emailState.value, passwordState.value);
   };
 
   return (

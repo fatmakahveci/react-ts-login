@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useContext } from 'react';
 import Home from './components/Home/Home';
 import Login from './components/Login/Login';
 import MainHeader from './components/MainHeader/MainHeader';
@@ -8,39 +8,17 @@ import AuthContext from './store/auth-context';
 
 import './globals.css';
 
-const App = ({ }): JSX.Element => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    const storedUserLoggedInInformation = localStorage.getItem('isLoggedIn');
-
-    if (storedUserLoggedInInformation === '1') {
-      setIsLoggedIn(true);
-    }
-  }, []);
-
-  const loginHandler = () => {
-    localStorage.setItem('isLoggedIn', '1');
-    setIsLoggedIn(true);
-  };
-
-  const logoutHandler = ()  => {
-    localStorage.removeItem('isLoggedIn');
-    setIsLoggedIn(false);
-  };
+const App = (): JSX.Element => {
+  const ctx = useContext(AuthContext);
 
   return (
-    <AuthContext.Provider value={{
-      isLoggedIn: isLoggedIn,
-      onLogout: logoutHandler
-      }}
-    >
-      <MainHeader onLogout={logoutHandler} />
+    <>
+      <MainHeader />
       <main>
-        {!isLoggedIn && <Login onLogin={loginHandler} />}
-        {isLoggedIn && <Home onLogout={logoutHandler} />}
+        {!ctx.isLoggedIn && <Login />}
+        {ctx.isLoggedIn && <Home />}
       </main>
-    </AuthContext.Provider>
+    </>
   );
 }
 

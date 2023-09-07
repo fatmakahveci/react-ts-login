@@ -1,14 +1,17 @@
 'use client';
 
-import { LogoutProps } from '@/shared/types/Types';
-import { FC } from 'react';
+import AuthContext from '@/app/store/auth-context';
+import { useContext } from 'react';
+import Button from '../UI/Button/Button';
 import Card from '../UI/Card/Card';
 import './Home.css';
 
-const Home: FC<LogoutProps> = ({ onLogout }) => {
+const Home = (): JSX.Element => {
+  const authCtx = useContext(AuthContext);
   return (
     <Card cssName="home">
       <h1>Welcome back!</h1>
+      <Button type="button" onClick={authCtx.onLogout} disabled={false}>Logout</Button>
     </Card>
   );
 };

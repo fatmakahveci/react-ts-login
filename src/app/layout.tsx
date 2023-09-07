@@ -1,7 +1,8 @@
 'use client';
 
-import React, { ReactNode } from 'react'
-import './globals.css'
+import React, { ReactNode } from 'react';
+import './globals.css';
+import { AuthContextProvider } from './store/auth-context';
 
 export default function RootLayout({
   children,
@@ -9,8 +10,12 @@ export default function RootLayout({
   children: ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className="{body}">{children}</body>
-    </html>
+      <html lang="en">
+        <body className="body">
+          <AuthContextProvider>
+            {children}
+          </AuthContextProvider>
+        </body>
+      </html>
   )
 }

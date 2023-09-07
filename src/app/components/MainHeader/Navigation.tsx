@@ -1,11 +1,10 @@
 'use client';
 
-import { LogoutProps } from '@/shared/types/Types';
-import { FC, useContext } from 'react';
+import { useContext } from 'react';
 import AuthContext, { AuthContextValue } from '../../store/auth-context';
 import './Navigation.css';
 
-const Navigation: FC<LogoutProps> = ({ onLogout }) => {
+const Navigation = (): JSX.Element => {
   const ctx = useContext<AuthContextValue>(AuthContext);
 
   return (
@@ -23,7 +22,7 @@ const Navigation: FC<LogoutProps> = ({ onLogout }) => {
         )}
         {ctx.isLoggedIn && (
           <li>
-            <button onClick={onLogout}>Logout</button>
+            <button onClick={ctx.onLogout}>Logout</button>
           </li>
         )}
       </ul>
