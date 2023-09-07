@@ -1,11 +1,11 @@
 'use client';
 
-import { EmailProps, LoginProps, PasswordProps } from '@/shared/types/Types';
-import { ChangeEvent, FC, FormEvent, useContext, useEffect, useReducer, useState } from 'react';
+import AuthContext from '@/app/store/auth-context';
+import { EmailProps, PasswordProps } from '@/shared/types/Types';
+import { ChangeEvent, FormEvent, useContext, useEffect, useReducer, useState } from 'react';
 import Button from '../UI/Button/Button';
 import Card from '../UI/Card/Card';
 import './Login.css';
-import AuthContext from '@/app/store/auth-context';
 
 const emailReducer = (state: EmailProps["type"], action: EmailProps["action"]) => {
   if (action.type === 'USER_INPUT') {
