@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Home from './components/Home/Home';
 import Login from './components/Login/Login';
 import MainHeader from './components/MainHeader/MainHeader';
@@ -19,12 +19,12 @@ const App = ({ }): JSX.Element => {
     }
   }, []);
 
-  const loginHandler = (email: string, password: string) => {
+  const loginHandler = () => {
     localStorage.setItem('isLoggedIn', '1');
     setIsLoggedIn(true);
   };
 
-  const logoutHandler = () => {
+  const logoutHandler = ()  => {
     localStorage.removeItem('isLoggedIn');
     setIsLoggedIn(false);
   };
