@@ -8,10 +8,11 @@ import './Home.css';
 
 const Home = (): JSX.Element => {
   const authCtx = useContext(AuthContext);
+
   return (
     <Card cssName="home">
       <h1>Welcome back!</h1>
-      <Button type="button" onClick={authCtx.onLogout} disabled={false}>Logout</Button>
+      <Button type="button" onClick={authCtx.onLogout}>Logout</Button>
     </Card>
   );
 };

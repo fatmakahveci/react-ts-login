@@ -1,12 +1,11 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ChangeEvent, MutableRefObject, ReactNode } from 'react';
 
 export type ButtonProps = {
     type: 'submit' | 'reset' | 'button' | undefined;
     children: ReactNode;
     onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
-    disabled: boolean;
     className?: string;
 };
 
@@ -18,15 +17,25 @@ export type CardProps = {
 export type EmailProps = {
     type: {
         value: string;
-        isValid: boolean | null
+        isValid: boolean | null;
     };
     action: {
         type: 'USER_INPUT';
         value: string;
         } | {
         type: 'INPUT_BLUR';
-        isValid: boolean | null;
     };
+};
+
+export type InputProps = {
+    id: string;
+    isValid: boolean | null;
+    label: string;
+    onBlur: () => void;
+    onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+    ref: any;
+    type: string;
+    value: string;
 };
 
 export type LoginProps = {
@@ -47,6 +56,5 @@ export type PasswordProps = {
         value: string;
         } | {
         type: 'INPUT_BLUR';
-        isValid: boolean | null;
     };
 };

@@ -4,13 +4,12 @@ import { ButtonProps } from '@/shared/types/Types';
 import { FC } from 'react';
 import './Button.css';
 
-const Button: FC<ButtonProps> = ({ type, children, onClick, disabled }): JSX.Element => {
+const Button: FC<ButtonProps> = ({ children, className, onClick, type }): JSX.Element => {
   return (
     <button
-        className="button"
+        className={`button ${className}`}
         type={type || 'button'}
         onClick={onClick}
-        disabled={disabled}
     >
     {children}
     </button>
