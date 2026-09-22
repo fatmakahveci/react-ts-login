@@ -1,0 +1,5 @@
+.login { max-width: 460px; padding: clamp(24px, 5vw, 40px); }
+.intro { font-size: .9rem; color: var(--muted); margin-bottom: 28px; }
+.password-toggle { display: block; margin: 10px 0 18px auto; min-height: 32px; background: transparent; border: 0; padding: 4px 0; color: var(--accent); font-size: .78rem; font-weight: 600; cursor: pointer; }
+.password-toggle:hover { text-decoration: underline; }
+.login-submit { width: 100%; justify-content: space-between; }
