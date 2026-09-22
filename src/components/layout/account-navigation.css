@@ -1,0 +1,4 @@
+.nav { display: flex; gap: 16px; align-items: center; }
+.demo-badge { font-size: .72rem; color: var(--muted); border: 1px solid #ccd8ce; border-radius: 20px; padding: 7px 12px; }
+.nav .button { padding: 8px 14px; }
+@media (max-width: 420px) { .nav:has(button) .demo-badge { display: none; } }

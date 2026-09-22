@@ -1,0 +1,9 @@
+.control { margin: 22px 0 0; }
+.control label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: 9px; }
+.control input { width: 100%; min-height: 48px; padding: 12px 14px; border: 1px solid #bac7be; border-radius: 8px; background: #fcfdfb; color: var(--ink); }
+.control input:focus { outline: 3px solid #24634f20; border-color: var(--accent); }
+.control input::placeholder { color: #748078; }
+.control.invalid input { border-color: #b33832; }
+.field-hint, .field-error { font-size: .75rem; margin: 7px 0 0; }
+.field-hint { color: var(--muted); }
+.field-error { color: #a12b26; }
