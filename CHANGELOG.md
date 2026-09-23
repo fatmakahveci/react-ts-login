@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Upgrade Next.js and its ESLint configuration to 16.3.3 and the sharp override to 0.35.4 to address GHSA-p293-qw3h-jr36, GHSA-2xp9-vwfh-vxw4, and GHSA-rgj7-g3m4-5g8c.
+
 - Standardize source filenames to kebab-case and organize components, contexts, and shared UI types outside the route directory.
 
 - Fix forwarded input refs and validate current values synchronously on submit.
