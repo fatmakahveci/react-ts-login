@@ -124,6 +124,32 @@ Tests use **Vitest**, **React Testing Library**, and **jsdom**. They cover:
 
 Run `npm run check` before submitting changes. The [CI workflow](.github/workflows/test.yml) runs the same checks for pushes and pull requests targeting `main`.
 
+## CI / CD
+
+The [CI / CD workflow](.github/workflows/test.yml) runs on pull requests, pushes to `main`, and manual dispatches.
+
+1. Install the locked dependencies on Node.js 22.
+2. Fail on high or critical dependency advisories, then run lint, TypeScript, tests, and the production build.
+3. Build the Docker image and verify that its HTTP endpoint and JavaScript/CSS assets are served successfully.
+4. On `main` only, publish that tested image to GitHub Container Registry using the workflow's `GITHUB_TOKEN`.
+
+The container runs as a non-root user and includes only the Next.js standalone runtime and assets. Application images use `ghcr.io/fatmakahveci/react-ts-login/app:latest` and `:sha-<full-commit-sha>`. Pull requests never publish images. The immutable commit tag identifies the version to deploy or roll back to.
+
+```bash
+# Build and check the image locally (requires Docker)
+docker build -t forma:local .
+bash scripts/smoke-test-container.sh forma:local
+
+# Run a published Linux amd64 image
+docker run --rm --platform linux/amd64 -p 3000:3000 ghcr.io/fatmakahveci/react-ts-login/app:latest
+```
+
+Open [localhost:3000](http://localhost:3000). If the GHCR package is private, authenticate with an account that has package read access before pulling it. Package visibility is managed in GitHub's package settings.
+
+CD delivers a runnable image; it does not deploy to a public website or remote server. No extra deployment secrets are required for GHCR publishing. A hosting target can consume the commit-tagged image when one is configured.
+
+The separate [source package workflow](.github/workflows/publish-source-package.yml) validates the source before publishing an OCI source archive on GitHub releases or manual dispatch. Source archives retain their existing package name, separate from runnable `/app` images. Dependabot checks npm packages, GitHub Actions, and the Docker base image weekly.
+
 ## Contributing
 
 See the [contributing guide](.github/CONTRIBUTING.md) for the development workflow and pull request expectations. Notable changes are recorded in the [changelog](CHANGELOG.md).
