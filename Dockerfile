@@ -1,4 +1,4 @@
-FROM node:22-bookworm-slim AS dependencies
+FROM node:25-bookworm-slim AS dependencies
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts
@@ -8,7 +8,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 COPY . .
 RUN mkdir -p public && npm run build
 
-FROM node:22-bookworm-slim AS runner
+FROM node:25-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
