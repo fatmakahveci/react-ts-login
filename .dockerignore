@@ -11,3 +11,6 @@ next-env.d.ts
 *.key
 npm-debug.log*
 demo.gif
+
+playwright-report
+test-results

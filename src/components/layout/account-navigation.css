@@ -1,4 +1,6 @@
-.nav { display: flex; gap: 16px; align-items: center; }
-.demo-badge { font-size: .72rem; color: var(--muted); border: 1px solid #ccd8ce; border-radius: 20px; padding: 7px 12px; }
+.nav { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.nav select { border: 1px solid var(--border); background: var(--surface); color: var(--ink); border-radius: 8px; min-height: 44px; padding: 8px; }
+.nav a { font-size: .85rem; }
 .nav .button { padding: 8px 14px; }
-@media (max-width: 420px) { .nav:has(button) .demo-badge { display: none; } }
+.theme-toggle { border: 1px solid var(--border); background: var(--surface); color: var(--ink); width: 44px; height: 44px; border-radius: 50%; font-size: 1.3rem; cursor: pointer; }
+@media (max-width: 600px) { .main-header { align-items: flex-start; } .nav { gap: 8px; } }

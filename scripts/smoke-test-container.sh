@@ -2,7 +2,8 @@
 set -euo pipefail
 
 image="${1:?Usage: bash scripts/smoke-test-container.sh IMAGE}"
-container_id="$(docker run --detach "$image")"
+shift
+container_id="$(docker run --detach "$@" "$image")"
 cleanup() {
   docker logs "$container_id"
   docker rm --force "$container_id" > /dev/null
@@ -14,6 +15,8 @@ for attempt in {1..30}; do
     fetch("http://127.0.0.1:3000")
       .then(async response => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const health = await fetch("http://127.0.0.1:3000/api/health");
+        if (!health.ok) throw new Error("Database is not ready");
         const html = await response.text();
         if (!html.includes("Forma") || !html.includes("main-content")) {
           throw new Error("Unexpected application response");

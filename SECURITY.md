@@ -20,28 +20,29 @@ Include the affected component and version, reproduction steps, potential
 impact, and any suggested mitigation. Reports will be reviewed as promptly as
 possible, and coordinated disclosure is appreciated.
 
-## Scope and Demo Limitations
+## Security Model
 
-This project demonstrates a client-side login interface. It does not verify
-identities, authenticate against a server, or protect backend resources.
+Authentication uses Better Auth with PostgreSQL-backed sessions, password hashing,
+HTTP-only cookies, required email verification, and database-backed rate limits.
+Task endpoints check the authenticated user on every request and scope queries to
+that user's ID. Mutating task requests require the configured application Origin.
+The workspace route redirects unauthenticated users; hiding UI is not the
+security boundary. No passwords or session tokens are stored in localStorage.
 
-- The `isLoggedIn` localStorage flag controls the demo UI only. It is editable
-  by the browser user and must not be used as an authorization mechanism.
-- Email and password values are not persisted or sent to an authentication
-  service. Use sample credentials when testing the demo.
-- Form validation provides user feedback; it is not a security boundary.
-- When localStorage is unavailable, the demo session remains in memory for
-  the current page.
+Production requires HTTPS, a random BETTER_AUTH_SECRET, a protected database,
+and TLS-enabled SMTP. Do not expose PostgreSQL, test mailboxes, or the application
+port directly; use the configured reverse proxy. Never enable ALLOW_LOCAL_HTTP
+on a public deployment. Keep .env files and backups out of version control.
 
-Changes that expose credentials, introduce script injection, or compromise
-project dependencies are appropriate subjects for a private security report.
+The test inbox is strictly a development fixture bound to loopback. Browser
+tests must use a dedicated database. They create test users and revoke their
+sessions. The old demo.gif depicts the historical client-only interface, not
+the current authentication behavior.
 
 ## Safe Reporting
 
-Use a local copy and synthetic data to reproduce an issue. Do not include
-real passwords, access tokens, personal information, or other secrets in a
-report. Do not test against systems or accounts without authorization.
-
-Before using this interface in a production application, integrate a
-server-side identity service and enforce authentication and authorization
-on the server.
+Use synthetic accounts in an authorized test environment. Include reproduction
+steps, affected versions, and impact, but never include credentials, verification
+links, session cookies, or personal information. Report suspected authentication,
+authorization, dependency, and data-isolation issues through the private channel
+above. Automated checks do not constitute a third-party security audit.
