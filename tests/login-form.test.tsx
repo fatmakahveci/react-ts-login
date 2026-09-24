@@ -1,71 +1,47 @@
-import { afterEach, beforeEach, expect, it } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import App from '../src/app/page';
-import { AuthContextProvider } from '@/contexts/auth-context';
-
-beforeEach(() => localStorage.clear());
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import LoginForm from '@/components/auth/login-form';
+import { PreferencesProvider } from '@/contexts/preferences-context';
+const mocks = vi.hoisted(() => ({ signIn: vi.fn(), push: vi.fn(), refresh: vi.fn() }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: mocks.push, refresh: mocks.refresh }), useSearchParams: () => new URLSearchParams() }));
+vi.mock('@/lib/auth-client', () => ({ authClient: { signIn: { email: mocks.signIn } } }));
+beforeEach(() => { vi.resetAllMocks(); });
 afterEach(cleanup);
-const start = () => render(<AuthContextProvider><App /></AuthContextProvider>);
-const submit = () => fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
-const fill = (email: string, password: string) => {
-  fireEvent.change(screen.getByLabelText('Email address'), { target: { value: email } });
-  fireEvent.change(screen.getByLabelText('Password'), { target: { value: password } });
-};
-
-it('reports accessible validation errors and focuses the first invalid field', () => {
-  start();
-  submit();
-  const email = screen.getByLabelText('Email address');
-  expect(document.activeElement).toBe(email);
-  expect(email.getAttribute('aria-invalid')).toBe('true');
-  expect(email.getAttribute('aria-describedby')).toContain('email-error');
-  expect(screen.getAllByRole('alert')).toHaveLength(2);
-  fireEvent.change(email, { target: { value: 'demo@example.com' } });
-  submit();
-  expect(document.activeElement).toBe(screen.getByLabelText('Password'));
+function start(locale: 'en' | 'tr' = 'en') { render(<PreferencesProvider initialLocale={locale} initialTheme="light"><LoginForm /></PreferencesProvider>); }
+it('focuses the first invalid field and exposes accessible errors', () => {
+  start(); fireEvent.click(screen.getByRole('button', { name: /Sign in/ }));
+  expect(document.activeElement).toBe(screen.getByLabelText('Email address'));
+  expect(screen.getByLabelText('Email address').getAttribute('aria-invalid')).toBe('true');
+  expect(mocks.signIn).not.toHaveBeenCalled();
 });
-
-it('logs in immediately after valid typing, focuses the home heading and logs out', () => {
-  start();
-  fill('demo@example.com', 'sample-password');
-  submit();
-  expect(document.activeElement).toBe(screen.getByRole('heading', { name: 'Make yourself at home.' }));
-  fireEvent.click(screen.getAllByRole('button', { name: 'Sign out' })[0]);
-  expect(screen.getByRole('button', { name: /sign in/i })).toBeTruthy();
-  expect(localStorage.getItem('isLoggedIn')).toBeNull();
+it('shows loading state, prevents duplicate submission, and handles rejected credentials', async () => {
+  let resolve: (value: unknown) => void = () => {};
+  mocks.signIn.mockReturnValue(new Promise(result => { resolve = result; }));
+  start(); fireEvent.change(screen.getByLabelText('Email address'), { target: { value: 'demo@example.test' } });
+  fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'wrong-password' } });
+  fireEvent.click(screen.getByRole('button', { name: /Sign in/ }));
+  expect(screen.getByRole('button', { name: /Please wait/ }).hasAttribute('disabled')).toBe(true);
+  resolve({ error: { code: 'INVALID_EMAIL_OR_PASSWORD', status: 401 } });
+  await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('email or password is incorrect'));
+  expect(mocks.push).not.toHaveBeenCalled();
 });
-
-it('does not submit stale validity after a valid password becomes invalid', () => {
-  start();
-  fill('demo@example.com', 'sample-password');
-  fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'short' } });
-  submit();
-  expect(localStorage.getItem('isLoggedIn')).toBeNull();
-  expect(document.activeElement).toBe(screen.getByLabelText('Password'));
+it('redirects only after server-confirmed sign-in', async () => {
+  mocks.signIn.mockResolvedValue({ data: { user: {} } }); start();
+  fireEvent.change(screen.getByLabelText('Email address'), { target: { value: 'demo@example.test' } });
+  fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'valid-passphrase' } });
+  fireEvent.click(screen.getByRole('button', { name: /Sign in/ }));
+  await waitFor(() => expect(mocks.push).toHaveBeenCalledWith('/workspace'));
 });
-
-it.each(['@', 'name@', 'name@example', 'name @example.com'])('rejects malformed email %s', email => {
-  start();
-  fill(email, 'sample-password');
-  submit();
-  expect(screen.getByText('Enter a valid email address.')).toBeTruthy();
-  expect(localStorage.getItem('isLoggedIn')).toBeNull();
+it('reports network failure without redirecting', async () => {
+  mocks.signIn.mockRejectedValue(new Error('network')); start();
+  fireEvent.change(screen.getByLabelText('Email address'), { target: { value: 'demo@example.test' } });
+  fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'valid-passphrase' } });
+  fireEvent.click(screen.getByRole('button', { name: /Sign in/ }));
+  await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('Unable to connect'));
 });
-
-it('reveals and hides the password without submitting', () => {
-  start();
-  fill('demo@example.com', 'sample-password');
-  fireEvent.click(screen.getByRole('button', { name: 'Show password' }));
-  expect(screen.getByLabelText('Password').getAttribute('type')).toBe('text');
-  expect(screen.getByRole('button', { name: 'Hide password' }).getAttribute('aria-pressed')).toBe('true');
-  fireEvent.click(screen.getByRole('button', { name: 'Hide password' }));
-  expect(screen.getByLabelText('Password').getAttribute('type')).toBe('password');
-  expect(localStorage.getItem('isLoggedIn')).toBeNull();
-});
-
-it('restores an existing demo session on initial render', () => {
-  localStorage.setItem('isLoggedIn', '1');
-  start();
-  expect(screen.getByRole('heading', { name: 'Make yourself at home.' })).toBeTruthy();
-  expect(screen.queryByLabelText('Password')).toBeNull();
+it('renders Turkish and toggles password visibility without submission', () => {
+  start('tr'); fireEvent.click(screen.getByRole('button', { name: 'Parolayı göster' }));
+  expect(screen.getByLabelText('Parola').getAttribute('type')).toBe('text');
+  expect(screen.getByRole('button', { name: 'Parolayı gizle' }).getAttribute('aria-pressed')).toBe('true');
+  expect(mocks.signIn).not.toHaveBeenCalled();
 });

@@ -1,159 +1,155 @@
-# Forma · React TypeScript Login
+# Forma · Personal Workspace
 
-[![CI](https://github.com/fatmakahveci/react-ts-login/actions/workflows/test.yml/badge.svg)](https://github.com/fatmakahveci/react-ts-login/actions/workflows/test.yml)
-[![React](https://img.shields.io/badge/React-TypeScript-149ECA?logo=react&logoColor=white)](https://react.dev/)
-[![Next.js](https://img.shields.io/badge/Next.js-App_Router-000000?logo=next.js&logoColor=white)](https://nextjs.org/)
+[![CI / CD](https://github.com/fatmakahveci/react-ts-login/actions/workflows/test.yml/badge.svg)](https://github.com/fatmakahveci/react-ts-login/actions/workflows/test.yml)
 [![License](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE.md)
 
-A responsive sign-in demo built with Next.js, React, and TypeScript. Forma combines reusable UI components, accessible form feedback, and a shared demo session in a small, testable application.
+A bilingual personal workspace with verified accounts, private tasks, profile settings, and light/dark themes. Built with Next.js, React, TypeScript, Better Auth, PostgreSQL, and SMTP.
 
-**This is a client-side UI demonstration.** It does not verify identities, create accounts, or protect server resources.
+## Preview
 
-## Demo
-
-![Forma demo showing field validation, password visibility, sign-in, and sign-out](demo.gif)
+![Forma workspace with private tasks and account settings](docs/workspace.png)
 
 ## Features
 
-- Immediate validation using the latest field values, without a submit delay.
-- Field-level error messages, accessible descriptions, and focus on the first invalid input.
-- Password visibility toggle and browser autofill support.
-- Keyboard focus indicators, a skip link, and focus management between views.
-- Responsive sign-in and workspace screens styled with plain CSS.
-- Demo session restoration, cross-tab synchronization, and an in-memory fallback when storage is blocked.
-- Behavioral tests and CI checks for lint, types, tests, and production builds.
+- Email registration and verification, password sign-in, and password recovery.
+- Database-backed sessions in HTTP-only cookies; protected pages and per-user task APIs.
+- Private task creation, completion, filtering, and deletion (up to 200 tasks).
+- Profile name changes, password changes, and revocation of other sessions.
+- Turkish/English UI and persistent light/dark themes, rendered from preference cookies.
+- Accessible labels, errors, loading states, keyboard focus, responsive layouts, and expired-session redirects.
+- Structured server error logs with reference IDs and a database readiness endpoint.
+- Real PostgreSQL/SMTP browser tests on desktop and mobile, plus CI and container delivery.
 
-## Quick Start
+The old client-only demo login flag is no longer supported. Create and verify a real account in the configured environment; arbitrary credentials do not grant access.
 
-Requirements: **Node.js 22.22.2+ (22.x), 24.15.0+ (24.x), or 26+**, and **npm**. The `.nvmrc` file selects Node.js 22.
+## Local Setup
+
+Use Node.js **22.22.2+ (22.x), 24.15.0+ (24.x), or 26+**, npm, and Docker Compose. `.nvmrc` selects Node.js 22.
 
 ```bash
-git clone https://github.com/fatmakahveci/react-ts-login.git
-cd react-ts-login
 npm ci
+cp .env.example .env.local
+openssl rand -base64 48
+```
+
+Paste the generated value into `BETTER_AUTH_SECRET` in `.env.local`. Keep it private. Then start the local database and test mailbox:
+
+```bash
+docker compose up -d
+npm run db:migrate
 npm run dev
 ```
 
-Open [localhost:3000](http://localhost:3000). No environment variables, API keys, or database setup are required.
+Open [localhost:3000](http://localhost:3000), create an account, and open [the local mailbox](http://localhost:8025) to follow the verification link. Mailpit captures email locally; it does not deliver to external addresses.
 
-If you use nvm, run `nvm install` and `nvm use` in the project directory before installing dependencies.
+`BETTER_AUTH_URL` must exactly match the browser origin. `localhost` and `127.0.0.1` are different origins. If using another port, update this value before starting the app.
 
-### Try the Demo
+## Configuration
 
-1. Enter a sample email such as `demo@example.com`.
-2. Enter a sample password such as `demo-password`.
-3. Select **Sign in** to open the workspace.
-4. Select **Sign out** to return to the login form.
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL connection string. |
+| `BETTER_AUTH_URL` | Public application origin; HTTPS is required in production. |
+| `BETTER_AUTH_SECRET` | Random secret of at least 32 characters; keep it stable across replicas and restarts. |
+| `SMTP_HOST`, `SMTP_PORT` | Mail server connection. |
+| `SMTP_USER`, `SMTP_PASSWORD` | Production SMTP credentials. |
+| `SMTP_SECURE` | `true` for implicit TLS (usually port 465). |
+| `SMTP_REQUIRE_TLS` | Defaults to `true`; use `false` only for a local test mailbox. |
+| `MAIL_FROM` | Verified sender address. |
+| `ALLOW_LOCAL_HTTP` | Local production-build testing only; never enable on a public host. |
 
-Any email matching the form's `name@example.com` pattern is accepted. Passwords must contain at least seven characters after surrounding whitespace is trimmed. Use sample credentials; no account registration is needed.
-
-Validation messages appear after a field loses focus or the form is submitted. Once shown, they update as you correct the input.
+There is no built-in SMTP service or email delivery guarantee. Production delivery needs a configured provider and a verified sender domain (including its SPF/DKIM records).
 
 ## Commands
 
 | Command | Purpose |
 | --- | --- |
 | `npm run dev` | Start the development server. |
-| `npm run build` | Generate the production build. |
-| `npm start` | Serve the production build. Run `npm run build` first. |
-| `npm run lint` | Check source files with ESLint. |
-| `npm run typecheck` | Check TypeScript without emitting files. |
-| `npm test` | Run the Vitest suite once. |
-| `npm run check` | Run lint, type checks, tests, and build in sequence. |
+| `npm run db:migrate` | Create/update Better Auth tables and the task table. |
+| `npm run check` | Lint, type-check, unit tests, and production build. |
+| `npm run build` | Build the production application. |
+| `npm start` | Start a local production preview after building. |
+| `npm test` | Run component tests. |
+| `npm run mail:test` | Start the loopback-only SMTP fixture for automated tests. |
+| `npm run test:e2e` | Run desktop/mobile browser tests against the production build. |
 
-For a local production preview:
+## Browser Tests
+
+Use a **dedicated test database**, not production. The tests create synthetic accounts and invalidate their sessions.
+
+Set `.env.local` to a test PostgreSQL database, `BETTER_AUTH_URL=http://127.0.0.1:3100`, `ALLOW_LOCAL_HTTP=true`, `SMTP_HOST=127.0.0.1`, `SMTP_PORT=1026`, and `SMTP_REQUIRE_TLS=false`.
 
 ```bash
+npm run db:migrate
 npm run build
-npm start
+npx playwright install chromium
+npm run mail:test
+# In another terminal:
+npm run test:e2e
 ```
+
+The browser suite verifies registration, unverified-account rejection, emailed links, sign-in, private tasks, cross-account isolation, CSRF rejection, profile changes, password changes/reset, expired sessions, keyboard navigation, mobile overflow, and persistent language/theme preferences. HTML reports and failure traces stay in ignored local directories.
+
+## Production Deployment
+
+A ready-to-run self-hosted stack is provided in [compose.production.yml](compose.production.yml). It includes PostgreSQL with persistent storage, a one-shot migration service, a non-root application container, and Caddy for automatic HTTPS. The database and application are not exposed directly to the public network.
+
+Requirements: a server with Docker Compose, a domain pointing to that server, inbound ports 80/443, and SMTP credentials.
+
+```bash
+cp .env.production.example .env.production
+# Fill DOMAIN, secrets, SMTP credentials, and MAIL_FROM.
+# Use openssl rand -hex 32 for POSTGRES_PASSWORD and BETTER_AUTH_SECRET.
+docker compose --env-file .env.production -f compose.production.yml config --quiet
+docker compose --env-file .env.production -f compose.production.yml up -d --build
+```
+
+Use URL-safe hexadecimal database passwords in this stack; special characters would need URL encoding in the connection string. Do not enable `ALLOW_LOCAL_HTTP` in production. Caddy provisions certificates only after DNS and network access are correct.
+
+Before upgrading, back up the database. Keep backups outside the repository:
+
+```bash
+docker compose --env-file .env.production -f compose.production.yml exec -T database \
+  pg_dump -U forma -d forma -Fc > /secure/backup/location/forma.dump
+```
+
+Review database migrations before upgrading deployed data. Restore procedures and backups should be tested on a separate database. Run one migration job before starting application replicas.
+
+### Health and Error Tracking
+
+`GET /api/health` returns 200 when the task schema is accessible and 503 otherwise. Docker uses it for readiness. Server failures emit JSON to stderr with an event type and reference/digest; the error UI displays a matching reference when available. Logs intentionally omit passwords, email bodies, session tokens, and query strings.
+
+```bash
+docker compose --env-file .env.production -f compose.production.yml logs --since 1h app
+```
+
+Forward container logs to your monitoring platform and configure uptime alerts for `/api/health`. No external monitoring account is configured by default.
+
+## CI / CD
+
+[GitHub Actions](.github/workflows/test.yml) checks dependency advisories, lint, types, unit tests, production builds, real PostgreSQL/SMTP browser flows, and a container/database smoke test. Pull requests do not publish images.
+
+Successful `main` runs publish `ghcr.io/fatmakahveci/react-ts-login/app:latest` and `:sha-<full-commit-sha>`. The image now requires the authentication, database, and SMTP configuration above. The supplied Compose production stack builds from source so migrations and application code stay together. CD publishes an artifact; activating a public server still needs hosting credentials and DNS configuration.
 
 ## Project Structure
 
 ```text
-src/
-├── app/
-│   ├── globals.css                  # Global styles and design tokens
-│   ├── layout.tsx                   # Root layout, metadata, and context provider
-│   └── page.tsx                     # Selects the login or workspace view
-├── components/
-│   ├── auth/
-│   │   └── login-form.tsx           # Form state, validation, and submission
-│   ├── layout/
-│   │   ├── account-navigation.tsx   # Demo status and sign-out action
-│   │   └── site-header.tsx          # Brand and account navigation
-│   ├── ui/
-│   │   ├── button.tsx
-│   │   ├── card.tsx
-│   │   └── input.tsx                # Forwarded ref and accessible field messages
-│   └── workspace/
-│       └── workspace-home.tsx      # Signed-in demo view
-├── contexts/
-│   └── auth-context.tsx            # Demo session state and persistence
-└── types/
-    └── ui.types.ts                 # Shared UI component props
-
-tests/
-├── auth-context.test.tsx
-└── login-form.test.tsx
+src/app/                  # Pages and authenticated route handlers
+src/components/auth/      # Login, registration, verification, and recovery UI
+src/components/workspace/ # Private tasks and account settings
+src/components/layout/    # Header, language/theme controls, and app shell
+src/components/ui/        # Accessible interface primitives
+src/contexts/             # Language and theme preferences
+src/lib/server/           # Auth, PostgreSQL, SMTP, and request security
+src/lib/                  # Auth client and translations
+scripts/                  # Migrations, test inbox, and container checks
+e2e/                      # Real account lifecycle browser tests
+deploy/                   # HTTPS reverse proxy configuration
 ```
 
-Component CSS files live beside their components. Source files and directories use `kebab-case`; React components use `PascalCase`. Shared type files use `.types.ts`, and component tests use `.test.tsx`. Next.js entry points keep their framework filenames. The `@/` import alias resolves to `src/`.
+## Project Resources
 
-## Session Behavior and Security
-
-The authentication context stores only an `isLoggedIn=1` flag in localStorage. The application does not persist or transmit the entered email or password.
-
-- Reloading restores the demo state when the flag exists.
-- Login and logout changes synchronize across tabs on the same origin.
-- If storage is unavailable, login and logout still work in memory for the current page.
-
-The flag is editable by the browser user and provides no authorization. A production application needs server-side identity verification and authorization before it can protect data or actions.
-
-To report a vulnerability privately, follow the [security policy](SECURITY.md).
-
-## Testing
-
-Tests use **Vitest**, **React Testing Library**, and **jsdom**. They cover:
-
-- Login, logout, session restoration, and credential persistence boundaries.
-- Invalid email input, accessible errors, and invalid-field focus.
-- Immediate submission and the regression where validity could become stale.
-- Password visibility without form submission.
-- Blocked browser storage and session changes from another tab.
-
-Run `npm run check` before submitting changes. The [CI workflow](.github/workflows/test.yml) runs the same checks for pushes and pull requests targeting `main`.
-
-## CI / CD
-
-The [CI / CD workflow](.github/workflows/test.yml) runs on pull requests, pushes to `main`, and manual dispatches.
-
-1. Install the locked dependencies on Node.js 22.
-2. Fail on high or critical dependency advisories, then run lint, TypeScript, tests, and the production build.
-3. Build the Docker image and verify that its HTTP endpoint and JavaScript/CSS assets are served successfully.
-4. On `main` only, publish that tested image to GitHub Container Registry using the workflow's `GITHUB_TOKEN`.
-
-The container uses Node.js 26, runs as a non-root user and includes only the Next.js standalone runtime and assets. Application images use `ghcr.io/fatmakahveci/react-ts-login/app:latest` and `:sha-<full-commit-sha>`. Pull requests never publish images. The immutable commit tag identifies the version to deploy or roll back to.
-
-```bash
-# Build and check the image locally (requires Docker)
-docker build -t forma:local .
-bash scripts/smoke-test-container.sh forma:local
-
-# Run a published Linux amd64 image
-docker run --rm --platform linux/amd64 -p 3000:3000 ghcr.io/fatmakahveci/react-ts-login/app:latest
-```
-
-Open [localhost:3000](http://localhost:3000). If the GHCR package is private, authenticate with an account that has package read access before pulling it. Package visibility is managed in GitHub's package settings.
-
-CD delivers a runnable image; it does not deploy to a public website or remote server. No extra deployment secrets are required for GHCR publishing. A hosting target can consume the commit-tagged image when one is configured.
-
-The separate [source package workflow](.github/workflows/publish-source-package.yml) validates the source before publishing an OCI source archive on GitHub releases or manual dispatch. Source archives retain their existing package name, separate from runnable `/app` images. Dependabot checks npm packages, GitHub Actions, and the Docker base image weekly.
-
-## Contributing
-
-See the [contributing guide](.github/CONTRIBUTING.md) for the development workflow and pull request expectations. Notable changes are recorded in the [changelog](CHANGELOG.md).
-
-## License
-
-Licensed under the [Apache License 2.0](LICENSE.md).
+- [Security policy](SECURITY.md)
+- [Contributing guide](.github/CONTRIBUTING.md)
+- [Changelog](CHANGELOG.md)
+- [Apache License 2.0](LICENSE.md)

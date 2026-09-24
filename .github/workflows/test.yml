@@ -21,6 +21,28 @@ jobs:
   test:
     timeout-minutes: 15
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-bookworm
+        env:
+          POSTGRES_DB: forma
+          POSTGRES_USER: forma
+          POSTGRES_PASSWORD: ci-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U forma -d forma"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      DATABASE_URL: postgresql://forma:ci-password@127.0.0.1:5432/forma
+      BETTER_AUTH_URL: http://127.0.0.1:3100
+      BETTER_AUTH_SECRET: ci-only-not-a-production-secret-at-least-32-characters
+      ALLOW_LOCAL_HTTP: 'true'
+      SMTP_HOST: 127.0.0.1
+      SMTP_PORT: '1026'
+      SMTP_SECURE: 'false'
+      SMTP_REQUIRE_TLS: 'false'
+      MAIL_FROM: Forma <hello@example.test>
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -35,6 +57,18 @@ jobs:
         run: npm audit --audit-level=high
       - name: Lint, type-check, test, and build
         run: npm run check
+      - name: Migrate test database
+        run: npm run db:migrate
+      - name: Install browser
+        run: npx playwright install --with-deps chromium
+      - name: Test desktop and mobile account lifecycle
+        run: |
+          npm run mail:test > /tmp/forma-test-mail.log 2>&1 &
+          for attempt in {1..30}; do
+            if curl -fsS http://127.0.0.1:8026 > /dev/null; then break; fi
+            sleep 1
+          done
+          npm run test:e2e
 
   container:
     needs: test
@@ -53,8 +87,27 @@ jobs:
             --label "org.opencontainers.image.source=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" \
             --label "org.opencontainers.image.revision=$GITHUB_SHA" \
             --tag forma:ci .
+      - name: Prepare isolated container database
+        run: |
+          docker network create forma-ci
+          docker run -d --name forma-db --network forma-ci -e POSTGRES_USER=forma -e POSTGRES_DB=forma -e POSTGRES_PASSWORD=ci-password postgres:18-bookworm
+          for attempt in {1..30}; do
+            if docker exec forma-db pg_isready -U forma -d forma; then break; fi
+            sleep 2
+          done
+          docker build --target migration -t forma:migrate .
+          docker run --rm --network forma-ci \
+            -e DATABASE_URL=postgresql://forma:ci-password@forma-db:5432/forma \
+            -e BETTER_AUTH_URL=http://127.0.0.1:3000 \
+            -e BETTER_AUTH_SECRET=ci-only-not-a-production-secret-at-least-32-characters \
+            -e ALLOW_LOCAL_HTTP=true forma:migrate
       - name: Test application and static assets in container
-        run: bash scripts/smoke-test-container.sh forma:ci
+        run: |
+          bash scripts/smoke-test-container.sh forma:ci --network forma-ci \
+            -e DATABASE_URL=postgresql://forma:ci-password@forma-db:5432/forma \
+            -e BETTER_AUTH_URL=http://127.0.0.1:3000 \
+            -e BETTER_AUTH_SECRET=ci-only-not-a-production-secret-at-least-32-characters \
+            -e ALLOW_LOCAL_HTTP=true
       - name: Publish tested image to GHCR
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         env:

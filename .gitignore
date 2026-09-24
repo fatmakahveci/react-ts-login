@@ -37,3 +37,10 @@ next-env.d.ts
 .next/
 .swc/
 .*.env
+
+.env
+.env.*
+!.env.example
+playwright-report/
+test-results/
+!.env.production.example
