@@ -25,7 +25,7 @@ A responsive sign-in demo built with Next.js, React, and TypeScript. Forma combi
 
 ## Quick Start
 
-Requirements: **Node.js 22.12 or newer** and **npm**. The `.nvmrc` file selects Node.js 22.
+Requirements: **Node.js 22.22.2+ (22.x), 24.15.0+ (24.x), or 26+**, and **npm**. The `.nvmrc` file selects Node.js 22.
 
 ```bash
 git clone https://github.com/fatmakahveci/react-ts-login.git
@@ -133,7 +133,7 @@ The [CI / CD workflow](.github/workflows/test.yml) runs on pull requests, pushes
 3. Build the Docker image and verify that its HTTP endpoint and JavaScript/CSS assets are served successfully.
 4. On `main` only, publish that tested image to GitHub Container Registry using the workflow's `GITHUB_TOKEN`.
 
-The container runs as a non-root user and includes only the Next.js standalone runtime and assets. Application images use `ghcr.io/fatmakahveci/react-ts-login/app:latest` and `:sha-<full-commit-sha>`. Pull requests never publish images. The immutable commit tag identifies the version to deploy or roll back to.
+The container uses Node.js 26, runs as a non-root user and includes only the Next.js standalone runtime and assets. Application images use `ghcr.io/fatmakahveci/react-ts-login/app:latest` and `:sha-<full-commit-sha>`. Pull requests never publish images. The immutable commit tag identifies the version to deploy or roll back to.
 
 ```bash
 # Build and check the image locally (requires Docker)
